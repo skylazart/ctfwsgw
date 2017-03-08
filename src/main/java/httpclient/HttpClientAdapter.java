@@ -7,7 +7,8 @@ import io.netty.handler.codec.http.HttpResponse;
 import java.util.List;
 
 /**
- * Created by fsantos on 3/7/17.
+ * CTF Webservice Gateway
+ * Created by Felipe Cerqueira - skylazart[at]gmail.com on 3/7/17.
  */
 public interface HttpClientAdapter {
     void onDataRead(HttpResponse httpResponse, List<HttpContent> httpContentList);

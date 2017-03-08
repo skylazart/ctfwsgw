@@ -17,7 +17,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 /**
- * Created by fsantos on 3/7/17.
+ * CTF Webservice Gateway
+ * Created by Felipe Cerqueira - skylazart[at]gmail.com on 3/7/17.
  */
 public class HttpClient {
     private static final Logger logger = LogManager.getLogger();

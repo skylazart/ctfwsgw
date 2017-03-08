@@ -20,13 +20,17 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 /**
- * Created by fsantos on 3/4/17.
+ * CTF Webservice Gateway
+ * Created by Felipe Cerqueira - skylazart[at]gmail.com on 3/4/17.
  */
 public class Bootstrap {
     private static final Logger logger = LogManager.getLogger();
 
+    private volatile boolean finish = false;
+
+
     public static void main(String[] args) throws InterruptedException {
-        new Bootstrap().run2();
+        new Bootstrap().run();
     }
 
     private void run2() throws InterruptedException {
@@ -76,6 +80,9 @@ public class Bootstrap {
                 logger.error("Restarting HTTP Server Thread");
                 future = httpServerExecutorService.submit(new HttpServer(config.getListenAddress(),
                         config.getHttpPort()));
+
+                if (finish)
+                    break;
             }
 
         } catch (GatewayConfigurationException e) {

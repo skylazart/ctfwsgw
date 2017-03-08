@@ -9,12 +9,13 @@ import io.netty.handler.ssl.SslContext;
 
 
 /**
- * Created by fsantos on 3/4/17.
+ * CTF Webservice Gateway
+ * Created by Felipe Cerqueira - skylazart[at]gmail.com on 3/4/17.
  */
 public class HttpServerInitializer extends ChannelInitializer<SocketChannel> {
     private final SslContext sslCtx;
 
-    public HttpServerInitializer(SslContext sslCtx) {
+    HttpServerInitializer(SslContext sslCtx) {
         this.sslCtx = sslCtx;
     }
 

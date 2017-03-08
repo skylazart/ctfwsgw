@@ -5,16 +5,12 @@ import io.netty.channel.Channel;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.logging.LogLevel;
-import io.netty.handler.logging.LoggingHandler;
-import io.netty.handler.ssl.SslContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.net.SocketException;
-
 /**
- * Created by fsantos on 3/4/17.
+ * CTF Webservice Gateway
+ * Created by Felipe Cerqueira - skylazart[at]gmail.com on 3/4/17.
  */
 public class HttpServer implements Runnable {
     private static final Logger logger = LogManager.getLogger();
@@ -40,7 +36,7 @@ public class HttpServer implements Runnable {
             ServerBootstrap b = new ServerBootstrap();
             b.group(bossGroup, workerGroup)
                            .channel(NioServerSocketChannel.class)
-                           .handler(new LoggingHandler(LogLevel.INFO))
+                           //.handler(new LoggingHandler(LogLevel.INFO))
                            .childHandler(new HttpServerInitializer(null));
 
             Channel ch = b.bind(listenAddress, httpPort).sync().channel();

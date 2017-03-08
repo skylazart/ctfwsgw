@@ -4,7 +4,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
- * Created by fsantos on 3/4/17.
+ * CTF Webservice Gateway
+ * Created by Felipe Cerqueira - skylazart[at]gmail.com on 3/4/17.
  */
 public class Config implements GatewayConfiguration {
     private static final Logger logger = LogManager.getLogger();
