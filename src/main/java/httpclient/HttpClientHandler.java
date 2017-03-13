@@ -32,7 +32,8 @@ public class HttpClientHandler extends SimpleChannelInboundHandler<HttpObject> {
             if (msg instanceof LastHttpContent) {
                 ctx.close();
 
-                httpCLientAdapter.onDataRead(httpResponse, httpContentList);
+                if (httpCLientAdapter != null)
+                    httpCLientAdapter.onDataRead(httpResponse, httpContentList);
             }
         }
     }
@@ -40,6 +41,8 @@ public class HttpClientHandler extends SimpleChannelInboundHandler<HttpObject> {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         ctx.close();
-        httpCLientAdapter.onError(ctx, cause);
+
+        if (httpCLientAdapter != null)
+            httpCLientAdapter.onError(ctx, cause);
     }
 }

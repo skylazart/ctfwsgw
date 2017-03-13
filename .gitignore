@@ -8,5 +8,5 @@
 out
 gen
 target
-src/main/java/message/
+src/main/java/routing/
 src/test/

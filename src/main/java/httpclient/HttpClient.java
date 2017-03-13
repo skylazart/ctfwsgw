@@ -20,14 +20,17 @@ import java.net.URISyntaxException;
  * CTF Webservice Gateway
  * Created by Felipe Cerqueira - skylazart[at]gmail.com on 3/7/17.
  */
-public class HttpClient {
+public class HttpClient implements Comparable<HttpClient> {
     private static final Logger logger = LogManager.getLogger();
 
     private final EventLoopGroup bossGroup;
     private final NioEventLoopGroup group;
     private final Bootstrap bootstrap;
 
-    public HttpClient() {
+    private final String name;
+
+    public HttpClient(String name) {
+        this.name = name;
         this.bossGroup = new NioEventLoopGroup(4);
         this.group = new NioEventLoopGroup();
         this.bootstrap = new Bootstrap();
@@ -37,24 +40,47 @@ public class HttpClient {
                 .handler(new HttpClientInitializer());
     }
 
-    public void connect(String url, HttpClientHandler httpClientHandler) throws URISyntaxException {
-        URI uri = new URI(url);
-        String host = uri.getHost();
-        int port = uri.getPort();
+    public boolean connect(String url, HttpClientHandler httpClientHandler) {
+        try {
+            URI uri = new URI(url);
+            String host = uri.getHost();
+            int port = uri.getPort();
 
-        bootstrap.connect(host, port).addListener((ChannelFutureListener) future -> {
-            Channel ch = future.channel();
-            ch.pipeline().addLast(httpClientHandler);
+            bootstrap.connect(host, port).addListener((ChannelFutureListener) future -> {
+                Channel ch = future.channel();
+                ch.pipeline().addLast(httpClientHandler);
 
-            HttpRequest request = new DefaultFullHttpRequest(
-                    HttpVersion.HTTP_1_1, HttpMethod.GET, uri.getRawPath());
+                HttpRequest request = new DefaultFullHttpRequest(
+                        HttpVersion.HTTP_1_1, HttpMethod.GET, uri.getRawPath());
 
-            ch.writeAndFlush(request).addListener(future1 -> logger.debug("Data sent"));
-        });
+                //ch.writeAndFlush(request).addListener(future1 -> logger.debug("Data sent"));
+                ch.writeAndFlush(request);
+            });
+            return true;
+        } catch (URISyntaxException e) {
+            logger.error("Error parsing URL {}", url, e);
+            return false;
+        }
     }
 
     public void finish() {
         bossGroup.shutdownGracefully();
         group.shutdownGracefully();
+    }
+
+    @Override
+    public int compareTo(HttpClient o) {
+        return name.compareTo(o.name);
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public String toString() {
+        return "HttpClient{" +
+                "name='" + name + '\'' +
+                '}';
     }
 }

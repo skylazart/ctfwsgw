@@ -34,7 +34,7 @@ public class Bootstrap {
     }
 
     private void run2() throws InterruptedException {
-        HttpClient httpClient = new HttpClient();
+        HttpClient httpClient = new HttpClient("test");
         try {
             for (int i = 0; i < 100; i++) {
                 httpClient.connect("http://localhost:8080/", new HttpClientHandler(new HttpClientAdapter() {
@@ -49,8 +49,6 @@ public class Bootstrap {
                     }
                 }));
             }
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
         } finally {
             Thread.sleep(10000);
             httpClient.finish();

@@ -22,6 +22,9 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<Object> {
     private boolean keepAlive = false;
     private HttpVersion httpVersion = HttpVersion.HTTP_1_0;
 
+    public HttpServerHandler() {
+    }
+
     @Override
     public void channelReadComplete(ChannelHandlerContext ctx) {
         ctx.flush();
