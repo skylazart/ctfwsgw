@@ -13,7 +13,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.lang.management.ManagementFactory;
-import java.net.URISyntaxException;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -61,15 +60,15 @@ public class Bootstrap {
 
             Config.Builder builder = new Config.Builder();
 
-            Config config = builder.httpPort(8089)
+            Config config = builder.listenPort(8089)
                     .listenAddress("0.0.0.0")
                     .build();
 
-            logger.info("HTTP listen address {} port {}", config.getListenAddress(), config.getHttpPort());
+            logger.info("HTTP listen address {} port {}", config.getListenAddress(), config.getListenPort());
 
             ExecutorService httpServerExecutorService = Executors.newFixedThreadPool(1);
             Future<?> future = httpServerExecutorService.submit(new HttpServer(config.getListenAddress(),
-                    config.getHttpPort()));
+                    config.getListenPort()));
 
             while (true) {
                 Thread.sleep(10000);
@@ -77,7 +76,7 @@ public class Bootstrap {
 
                 logger.error("Restarting HTTP Server Thread");
                 future = httpServerExecutorService.submit(new HttpServer(config.getListenAddress(),
-                        config.getHttpPort()));
+                        config.getListenPort()));
 
                 if (finish)
                     break;

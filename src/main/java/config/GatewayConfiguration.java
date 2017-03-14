@@ -6,5 +6,8 @@ package config;
  */
 public interface GatewayConfiguration {
     String getListenAddress();
-    Integer getHttpPort();
+    Integer getListenPort();
+
+    String getPcrfAddress();
+    Integer getPcrfPort();
 }

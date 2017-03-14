@@ -2,6 +2,7 @@ package config;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import validate.Validatable;
 
 /**
  * CTF Webservice Gateway
@@ -12,25 +13,31 @@ public class Config implements GatewayConfiguration {
 
     private static Config instance = null;
 
-    private String listenAddress;
-    private int httpPort;
-
+    private Params params = null;
 
     private Config() {
-
     }
 
-    public static class Builder {
-        private String listenAddress;
-        private int httpPort;
+    public static class Builder implements Validatable {
+        private Params params;
 
         public Builder listenAddress (String listenAddress) {
-            this.listenAddress = listenAddress;
+            params.setListenAddress(listenAddress);
             return this;
         }
 
-        public Builder httpPort(int httpPort) {
-            this.httpPort = httpPort;
+        public Builder listenPort(int listenPort) {
+            params.setListenPort(listenPort);
+            return this;
+        }
+
+        public Builder pcrfAddress(String pcrfAddress) {
+            params.setPcrfAddress(pcrfAddress);
+            return this;
+        }
+
+        public Builder pcrfPort(int pcrfPort) {
+            params.setPcrfPort(pcrfPort);
             return this;
         }
 
@@ -40,8 +47,7 @@ public class Config implements GatewayConfiguration {
                     Config.getInstance();
                 }
 
-                instance.httpPort = this.httpPort;
-                instance.listenAddress = this.listenAddress;
+                instance.params = params;
 
                 return Config.getInstance();
             } else {
@@ -49,8 +55,8 @@ public class Config implements GatewayConfiguration {
             }
         }
 
-        private boolean validate() {
-            return true;
+        public boolean validate() {
+            return params.validate();
         }
     }
 
@@ -62,10 +68,20 @@ public class Config implements GatewayConfiguration {
     }
 
     public String getListenAddress() {
-        return this.listenAddress;
+        return params.getListenAddress();
     }
 
-    public Integer getHttpPort() {
-        return this.httpPort;
+    public Integer getListenPort() {
+        return params.getListenPort();
+    }
+
+    @Override
+    public String getPcrfAddress() {
+        return params.getPcrfAddress();
+    }
+
+    @Override
+    public Integer getPcrfPort() {
+        return params.getPcrfPort();
     }
 }
