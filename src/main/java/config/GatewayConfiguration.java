@@ -8,6 +8,6 @@ public interface GatewayConfiguration {
     String getListenAddress();
     Integer getListenPort();
 
-    String getPcrfAddress();
-    Integer getPcrfPort();
+    String getOracleUrl();
+    String getCiscoUrl();
 }
