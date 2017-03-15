@@ -1,11 +1,11 @@
 package test;
 
-import entity.Msisdn;
-import httpclient.HttpClient;
+import br.com.druid.ctfwsgw.entity.Msisdn;
+import br.com.druid.ctfwsgw.httpclient.HttpClient;
 import org.junit.Assert;
 import org.junit.Test;
-import route.Router;
-import route.RouterSingleton;
+import br.com.druid.ctfwsgw.route.Router;
+import br.com.druid.ctfwsgw.route.RouterSingleton;
 
 /**
  * CTF Webservice Gateway

@@ -6,7 +6,7 @@ HttpClient
 HttpClientAdapter (client talking to server when receiving all data)
 
 
-Resolving the route problem:
+Resolving the br.com.druid.ctfwsgw.route problem:
 
 MSISDN -> HttpClient
 

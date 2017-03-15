@@ -57,7 +57,7 @@
                 <success>true</success>
                 <label>true</label>
                 <code>true</code>
-                <route>true</route>
+                <br.com.druid.ctfwsgw.route>true</br.com.druid.ctfwsgw.route>
                 <threadName>true</threadName>
                 <dataType>true</dataType>
                 <encoding>false</encoding>
@@ -93,7 +93,7 @@
                 <success>true</success>
                 <label>true</label>
                 <code>true</code>
-                <route>true</route>
+                <br.com.druid.ctfwsgw.route>true</br.com.druid.ctfwsgw.route>
                 <threadName>true</threadName>
                 <dataType>true</dataType>
                 <encoding>false</encoding>
