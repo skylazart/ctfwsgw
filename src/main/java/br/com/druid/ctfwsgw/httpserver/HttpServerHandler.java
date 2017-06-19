@@ -1,5 +1,9 @@
 package br.com.druid.ctfwsgw.httpserver;
 
+import br.com.druid.ctfwsgw.httpclient.HttpClient;
+import br.com.druid.ctfwsgw.httpclient.HttpClientAdapter;
+import br.com.druid.ctfwsgw.httpclient.HttpClientHandler;
+import br.com.druid.ctfwsgw.message.MiddlewareRequest;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
@@ -9,6 +13,9 @@ import io.netty.handler.codec.http.*;
 import io.netty.util.CharsetUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 /**
  * CTF Webservice Gateway
@@ -22,7 +29,13 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<Object> {
     private boolean keepAlive = false;
     private HttpVersion httpVersion = HttpVersion.HTTP_1_0;
 
+    // Lazy initialization because HttpClient is going to create many resources like thread pools, memory and etc.
+    private HttpClient pcrfCisco;
+    private HttpClient pcrfOracle;
+
     public HttpServerHandler() {
+        this.pcrfCisco = new HttpClient("Cisco");
+        this.pcrfOracle = new HttpClient("Oracle");
     }
 
     @Override
@@ -47,7 +60,6 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<Object> {
 
             HttpHeaders headers = request.headers();
             QueryStringDecoder queryStringDecoder = new QueryStringDecoder(request.uri());
-
         }
 
         if (msg instanceof HttpContent) {
@@ -55,10 +67,43 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<Object> {
             ByteBuf content = httpContent.content();
             if (content.isReadable()) {
                 buf.append(content.toString(CharsetUtil.UTF_8));
-                buf.append("\r\n");
-            } else {
-                buf.append("<html><body>teste</body></html>");
-                sendHttpResponse(ctx);
+            }
+
+            if (!content.isReadable() || httpContent instanceof DefaultLastHttpContent) {
+                logger.debug("Processing request {}", buf.toString());
+                MiddlewareRequest middlewareRequest = new MiddlewareRequest(buf.toString());
+
+                FullHttpRequest request = new DefaultFullHttpRequest(
+                        HttpVersion.HTTP_1_1, HttpMethod.POST, "/axis/services/MessageService");
+
+                request.headers().set("Content-Type", "application/x-www-form-urlencoded");
+                request.headers().set("Accept", "text/xml; charset=utf-8");
+                ByteBuf bbuf = Unpooled.copiedBuffer(buf.toString(), StandardCharsets.UTF_8);
+                request.headers().set("Content-Length", bbuf.readableBytes());
+                request.content().clear().writeBytes(bbuf);
+
+                pcrfOracle.connect("http://10.221.109.25:8080/axis/services/MessageService", request,
+                        new HttpClientHandler(new HttpClientAdapter() {
+                            @Override
+                            public void onDataRead(HttpResponse httpResponse, List<HttpContent> httpContentList) {
+                                StringBuilder sbuf = new StringBuilder();
+
+                                for (HttpContent httpContent: httpContentList) {
+                                    ByteBuf content = httpContent.content();
+                                    if (content.isReadable())
+                                        sbuf.append(content.toString(CharsetUtil.UTF_8));
+                                }
+
+                                logger.debug("Response: {}", sbuf);
+                                sendHttpResponse(ctx);
+                            }
+
+                            @Override
+                            public void onError(ChannelHandlerContext ctx, Throwable cause) {
+
+                            }
+                        }));
+
             }
         }
     }

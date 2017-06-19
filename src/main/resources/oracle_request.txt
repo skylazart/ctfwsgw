@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="ISO-8859-1"?><soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<soapenv:Header/>
+<soapenv:Body>
+<processTransaction xmlns="http://webservice.blueslice.com"><![CDATA[<tx>
+<req name="operation" resonly="y">
+<oper ent="Subscription" name="GetPoolID" ns="global">
+<expr>
+<param name="MSISDN"/>
+<op value="="/>
+<value val="5547997625295"/>
+</expr>
+</oper>
+</req>
+</tx>]]></processTransaction>
+</soapenv:Body>
+</soapenv:Envelope>
+
+
+PCRF ORACLE:
+http://10.221.109.25:8080
+
+curl -X POST -H "Accept: */*"              -H "Content-Type: application/x-www-form-urlencoded"                  -d '<?xml version="1.0" encoding="ISO-8859-1"?><soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                 <soapenv:Header/>
+                 <soapenv:Body>
+                 <processTransaction xmlns="http://webservice.blueslice.com"><![CDATA[<tx>
+                 <req name="operation" resonly="y">
+                 <oper ent="Subscription" name="GetPoolID" ns="global">
+                 <expr>
+                 <param name="MSISDN"/>
+                 <op value="="/>
+                 <value val="5547997625295"/>
+                 </expr>
+                 </oper>
+                 </req>
+                 </tx>]]></processTransaction>
+                 </soapenv:Body>
+                 </soapenv:Envelope>' http://10.221.109.25:8080/axis/services/MessageService
+
+<?xml version="1.0" encoding="UTF-8"?>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ns1="http://webservice.blueslice.com"><SOAP-ENV:Header></SOAP-ENV:Header><SOAP-ENV:Body><ns1:message error="0">&lt;![CDATA[&lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;tx nbreq="1"&gt;&lt;req name="operation" resonly="y"&gt;&lt;res affected="0" error="70019"/&gt;&lt;/req&gt;&lt;/tx&gt;]]&gt;</ns1:message></SOAP-ENV:Body></SOAP-ENV:Envelope>
+
+PCRF CISCO:
+URL:
+FPCPT1-lb-VIP - 10.221.106.102
+FPCPT2-lb-VIP - 10.221.107.102
+Port 8443
+
+
+ORACLE:
+curl http://10.221.109.25:8080/axis/services/MessageService
+<?xml version="1.0" encoding="UTF-8"?>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ns1="http://webservice.blueslice.com"><SOAP-ENV:Body><SOAP-ENV:Fault><faultcode>SOAP-ENV:Client</faultcode><faultstring>HTTP GET method not implemented</faultstring></SOAP-ENV:Fault></SOAP-ENV:Body></SOAP-ENV:Envelope>[ctfusr@ctflab1 ~]$
+
+curl -i \
+    -H "Accept: */*" \
+    -H "Content-Type: " \
+    -X POST -d "value":"30","type":"Tip 3","targetModule":"Target 3","configurationGroup":null,"name":"Configuration Deneme 3","description":null,"identity":"Configuration Deneme 3","version":0,"systemId":3,"active":true \
+    http://localhost:8080/xx/xxx/xxxx

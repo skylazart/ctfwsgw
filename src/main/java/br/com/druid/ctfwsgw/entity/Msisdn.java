@@ -8,9 +8,17 @@ public class Msisdn implements Comparable<Msisdn> {
     private final String msisdn;
     private final String prefix;
 
-    public Msisdn(String s) {
-        this.msisdn = s;
-        this.prefix = s.substring(0, 2);
+    public Msisdn(String s) throws InvalidMsisdn {
+        if (s.length() < 2)
+            throw new InvalidMsisdn("Invalid MSISDN " + s);
+
+        if (s.startsWith("55")) {
+            this.prefix = s.substring(2, 4);
+            this.msisdn = s;
+        } else {
+            this.prefix = s.substring(0, 2);
+            this.msisdn = "55" + s;
+        }
     }
 
     public String getMsisdn() {

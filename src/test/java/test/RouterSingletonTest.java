@@ -1,5 +1,6 @@
 package test;
 
+import br.com.druid.ctfwsgw.entity.InvalidMsisdn;
 import br.com.druid.ctfwsgw.entity.Msisdn;
 import br.com.druid.ctfwsgw.httpclient.HttpClient;
 import org.junit.Assert;
@@ -13,24 +14,25 @@ import br.com.druid.ctfwsgw.route.RouterSingleton;
  */
 public class RouterSingletonTest {
     @Test
-    public void test() throws Exception {
+    public void test() throws Exception, InvalidMsisdn {
         Router<HttpClient> router = RouterSingleton.getInstance();
+
         HttpClient rio = new HttpClient("RIO");
         HttpClient sp = new HttpClient("SP");
         HttpClient test = new HttpClient("TEST");
 
-        router.addMsisdn(new Msisdn("21998519898"), test);
+        router.addMsisdn(new Msisdn("5521998519898"), test);
         router.addPrefix("21", rio);
         router.addPrefix("11", sp);
 
         HttpClient t = null;
-        t = router.findRoute(new Msisdn("21998519898"));
+        t = router.findRoute(new Msisdn("5521998519898"));
         Assert.assertEquals(t.getName().compareTo("TEST"), 0);
 
-        t = router.findRoute(new Msisdn("21999998888"));
+        t = router.findRoute(new Msisdn("5521999998888"));
         Assert.assertEquals(t.getName().compareTo("RIO"), 0);
 
-        t = router.findRoute(new Msisdn("11999998888"));
+        t = router.findRoute(new Msisdn("5511999998888"));
         Assert.assertEquals(t.getName().compareTo("SP"), 0);
 
         rio.finish();

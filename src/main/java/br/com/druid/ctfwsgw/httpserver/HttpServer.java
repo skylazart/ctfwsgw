@@ -1,5 +1,6 @@
 package br.com.druid.ctfwsgw.httpserver;
 
+import br.com.druid.ctfwsgw.httpclient.HttpClient;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.EventLoopGroup;
@@ -35,9 +36,9 @@ public class HttpServer implements Runnable {
         try {
             ServerBootstrap b = new ServerBootstrap();
             b.group(bossGroup, workerGroup)
-                           .channel(NioServerSocketChannel.class)
-                           //.handler(new LoggingHandler(LogLevel.INFO))
-                           .childHandler(new HttpServerInitializer(null));
+                    .channel(NioServerSocketChannel.class)
+                    //.handler(new LoggingHandler(LogLevel.INFO))
+                    .childHandler(new HttpServerInitializer(null));
 
             Channel ch = b.bind(listenAddress, httpPort).sync().channel();
             ch.closeFuture().sync();

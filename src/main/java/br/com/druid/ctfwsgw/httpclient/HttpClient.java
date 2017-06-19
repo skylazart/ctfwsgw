@@ -6,10 +6,7 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.http.DefaultFullHttpRequest;
-import io.netty.handler.codec.http.HttpMethod;
-import io.netty.handler.codec.http.HttpRequest;
-import io.netty.handler.codec.http.HttpVersion;
+import io.netty.handler.codec.http.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -30,6 +27,9 @@ public class HttpClient implements Comparable<HttpClient> {
     private final String name;
 
     public HttpClient(String name) {
+        if (name  == null)
+            throw new IllegalArgumentException("Name can't be null");
+
         this.name = name;
         this.bossGroup = new NioEventLoopGroup(4);
         this.group = new NioEventLoopGroup();
@@ -40,7 +40,7 @@ public class HttpClient implements Comparable<HttpClient> {
                 .handler(new HttpClientInitializer());
     }
 
-    public boolean connect(String url, HttpClientHandler httpClientHandler) {
+    public boolean connect(String url, FullHttpRequest httpRequest, HttpClientHandler httpClientHandler) {
         try {
             URI uri = new URI(url);
             String host = uri.getHost();
@@ -50,11 +50,8 @@ public class HttpClient implements Comparable<HttpClient> {
                 Channel ch = future.channel();
                 ch.pipeline().addLast(httpClientHandler);
 
-                HttpRequest request = new DefaultFullHttpRequest(
-                        HttpVersion.HTTP_1_1, HttpMethod.GET, uri.getRawPath());
-
                 //ch.writeAndFlush(request).addListener(future1 -> logger.debug("Data sent"));
-                ch.writeAndFlush(request);
+                ch.writeAndFlush(httpRequest);
             });
             return true;
         } catch (URISyntaxException e) {
@@ -71,6 +68,21 @@ public class HttpClient implements Comparable<HttpClient> {
     @Override
     public int compareTo(HttpClient o) {
         return name.compareTo(o.name);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof HttpClient)) return false;
+
+        HttpClient that = (HttpClient) o;
+
+        return getName().equals(that.getName());
+    }
+
+    @Override
+    public int hashCode() {
+        return getName().hashCode();
     }
 
     public String getName() {

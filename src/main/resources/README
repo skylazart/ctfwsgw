@@ -1,0 +1,4 @@
+ssh -l root 200.196.53.242
+
+ssh -L3333:10.174.225.14:22 -l root 200.196.53.242
+ssh -L4444:127.0.0.1:4444 -p 3333 'gu=T3225768@ctfusr@snelnxm79'@localhost
