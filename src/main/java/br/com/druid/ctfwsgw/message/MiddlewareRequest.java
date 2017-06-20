@@ -2,6 +2,8 @@ package br.com.druid.ctfwsgw.message;
 
 import br.com.druid.ctfwsgw.entity.InvalidMsisdn;
 import br.com.druid.ctfwsgw.entity.Msisdn;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 
@@ -16,10 +18,10 @@ import java.io.StringReader;
  * Created by Felipe Cerqueira - skylazart[at]gmail.com on 3/14/17.
  */
 public class MiddlewareRequest implements Request {
-    private final XPathFactory xpathFactory = XPathFactory.newInstance();
-    private final XPath xpath = xpathFactory.newXPath();
+    private static final Logger logger = LogManager.getLogger();
+
     private final String request;
-    private boolean validated;
+    private boolean validated = false;
     private Msisdn msisdn;
 
     public MiddlewareRequest(String request) {
@@ -28,15 +30,19 @@ public class MiddlewareRequest implements Request {
     }
 
     private void validate(String request) {
+        int idx1 = request.indexOf("<networkId>");
+        int idx2 = request.indexOf("</networkId>");
+
         try {
-            InputSource source = new InputSource(new StringReader(request));
-            Document doc = (Document) xpath.evaluate("/", source, XPathConstants.NODE);
-            //TODO: check for optimizations
-            String msisdn = xpath.evaluate("/*/*/GetSubscriberRequest/networkId", doc);
-            this.msisdn = new Msisdn(msisdn);
+            if (idx1 < 0 || idx2 < 0) {
+                logger.error("Invalid request. Element networkId not found");
+                return;
+            }
+
+            this.msisdn = new Msisdn(request.substring(idx1 + 11, idx2));
             validated = true;
-        } catch (XPathExpressionException|InvalidMsisdn e) {
-            validated = false;
+        } catch (InvalidMsisdn invalidMsisdn) {
+            logger.error("Invalid request {}", request);
         }
     }
 

@@ -29,7 +29,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>br.com.druid.ctfwsgw.bootstrap.Bootstrap</mainClass>
+                            <mainClass>br.com.druid.ctfwsgw.bootstrap.CtfWsGatewayBootstrap</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

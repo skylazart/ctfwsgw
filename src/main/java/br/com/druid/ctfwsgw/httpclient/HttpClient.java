@@ -27,7 +27,7 @@ public class HttpClient implements Comparable<HttpClient> {
     private final String name;
 
     public HttpClient(String name) {
-        if (name  == null)
+        if (name == null)
             throw new IllegalArgumentException("Name can't be null");
 
         this.name = name;
@@ -37,7 +37,7 @@ public class HttpClient implements Comparable<HttpClient> {
 
         bootstrap.group(bossGroup)
                 .channel(NioSocketChannel.class)
-                .handler(new HttpClientInitializer());
+                .handler(new HttpClientInitializer(null));
     }
 
     public boolean connect(String url, FullHttpRequest httpRequest, HttpClientHandler httpClientHandler) {

@@ -1,14 +1,12 @@
 package br.com.druid.ctfwsgw.httpserver;
 
-import br.com.druid.ctfwsgw.httpclient.HttpClient;
 import br.com.druid.ctfwsgw.httpclient.HttpClientAdapter;
 import br.com.druid.ctfwsgw.httpclient.HttpClientHandler;
 import br.com.druid.ctfwsgw.message.MiddlewareRequest;
+import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.*;
 import io.netty.handler.codec.http.*;
 import io.netty.util.CharsetUtil;
 import org.apache.logging.log4j.LogManager;
@@ -21,21 +19,42 @@ import java.util.List;
  * CTF Webservice Gateway
  * Created by Felipe Cerqueira - skylazart[at]gmail.com on 3/4/17.
  */
-public class HttpServerHandler extends SimpleChannelInboundHandler<Object> {
+public class HttpServerHandler extends SimpleChannelInboundHandler<Object> implements HttpClientAdapter {
     private static final Logger logger = LogManager.getLogger();
 
-    private HttpRequest request;
     private final StringBuilder buf = new StringBuilder();
     private boolean keepAlive = false;
     private HttpVersion httpVersion = HttpVersion.HTTP_1_0;
 
-    // Lazy initialization because HttpClient is going to create many resources like thread pools, memory and etc.
-    private HttpClient pcrfCisco;
-    private HttpClient pcrfOracle;
+    private HttpHeaders httpRequestHeader = null;
 
-    public HttpServerHandler() {
-        this.pcrfCisco = new HttpClient("Cisco");
-        this.pcrfOracle = new HttpClient("Oracle");
+    private final Bootstrap clientBootstrap;
+    private final Bootstrap httpsClientBootstrap;
+
+    private Channel channelOracle = null;
+    private Channel channelCisco = null;
+    private ChannelHandlerContext ctx = null;
+
+    public HttpServerHandler(Bootstrap clientBootstrap, Bootstrap httpsClientBootstrap) {
+        this.clientBootstrap = clientBootstrap;
+        this.httpsClientBootstrap = httpsClientBootstrap;
+
+        connectCisco();
+        connectOracle();
+    }
+
+    private void connectCisco() {
+        clientBootstrap.connect("10.221.109.25", 8080).addListener((ChannelFutureListener) future -> {
+            this.channelCisco = future.channel();
+            this.channelCisco.pipeline().addLast(new HttpClientHandler(this));
+        });
+    }
+
+    private void connectOracle() {
+        clientBootstrap.connect("10.221.109.25", 8080).addListener((ChannelFutureListener) future -> {
+            this.channelOracle = future.channel();
+            this.channelOracle.pipeline().addLast(new HttpClientHandler(this));
+        });
     }
 
     @Override
@@ -45,8 +64,10 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<Object> {
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
+        this.ctx = ctx;
+
         if (msg instanceof HttpRequest) {
-            HttpRequest request = this.request = (HttpRequest) msg;
+            HttpRequest request = (HttpRequest) msg;
 
             this.httpVersion = request.protocolVersion();
 
@@ -58,8 +79,7 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<Object> {
                 sendContinue(ctx);
             }
 
-            HttpHeaders headers = request.headers();
-            QueryStringDecoder queryStringDecoder = new QueryStringDecoder(request.uri());
+            this.httpRequestHeader = request.headers();
         }
 
         if (msg instanceof HttpContent) {
@@ -73,6 +93,11 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<Object> {
                 logger.debug("Processing request {}", buf.toString());
                 MiddlewareRequest middlewareRequest = new MiddlewareRequest(buf.toString());
 
+                if (!middlewareRequest.validate()) {
+                    logger.error("Invalid request");
+                    return;
+                }
+
                 FullHttpRequest request = new DefaultFullHttpRequest(
                         HttpVersion.HTTP_1_1, HttpMethod.POST, "/axis/services/MessageService");
 
@@ -82,28 +107,7 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<Object> {
                 request.headers().set("Content-Length", bbuf.readableBytes());
                 request.content().clear().writeBytes(bbuf);
 
-                pcrfOracle.connect("http://10.221.109.25:8080/axis/services/MessageService", request,
-                        new HttpClientHandler(new HttpClientAdapter() {
-                            @Override
-                            public void onDataRead(HttpResponse httpResponse, List<HttpContent> httpContentList) {
-                                StringBuilder sbuf = new StringBuilder();
-
-                                for (HttpContent httpContent: httpContentList) {
-                                    ByteBuf content = httpContent.content();
-                                    if (content.isReadable())
-                                        sbuf.append(content.toString(CharsetUtil.UTF_8));
-                                }
-
-                                logger.debug("Response: {}", sbuf);
-                                sendHttpResponse(ctx);
-                            }
-
-                            @Override
-                            public void onError(ChannelHandlerContext ctx, Throwable cause) {
-
-                            }
-                        }));
-
+                channelOracle.writeAndFlush(request);
             }
         }
     }
@@ -132,6 +136,32 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<Object> {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         logger.error("Exception caught", cause);
+        ctx.close();
+    }
+
+    @Override
+    public void onDataRead(HttpResponse httpResponse, List<HttpContent> httpContentList) {
+        logger.debug("Receiving answer {}", httpResponse);
+
+        StringBuilder sbuf = new StringBuilder();
+
+        for (HttpContent httpContent : httpContentList) {
+            ByteBuf content = httpContent.content();
+            if (content.isReadable())
+                sbuf.append(content.toString(CharsetUtil.UTF_8));
+        }
+
+        logger.debug("Http content: {}", sbuf);
+    }
+
+    @Override
+    public void onError(ChannelHandlerContext ctx, Throwable cause) {
+        logger.warn("Error {}", ctx.channel(), cause);
+        logger.info("Finishing connection with Oracle and Cisco...");
+
+        channelCisco.close();
+        channelOracle.close();
+
         ctx.close();
     }
 }

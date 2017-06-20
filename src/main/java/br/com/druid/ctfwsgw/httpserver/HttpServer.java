@@ -34,13 +34,12 @@ public class HttpServer implements Runnable {
         EventLoopGroup workerGroup = new NioEventLoopGroup();
 
         try {
-            ServerBootstrap b = new ServerBootstrap();
-            b.group(bossGroup, workerGroup)
+            ServerBootstrap serverBootstrap = new ServerBootstrap();
+            serverBootstrap.group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
-                    //.handler(new LoggingHandler(LogLevel.INFO))
-                    .childHandler(new HttpServerInitializer(null));
+                    .childHandler(new HttpServerInitializer(bossGroup));
 
-            Channel ch = b.bind(listenAddress, httpPort).sync().channel();
+            Channel ch = serverBootstrap.bind(listenAddress, httpPort).sync().channel();
             ch.closeFuture().sync();
 
         } catch (Exception e) {
